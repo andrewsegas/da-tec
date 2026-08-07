@@ -155,6 +155,43 @@ async function seedPoll(createdBy: string) {
   console.info("✓ enquete de exemplo criada");
 }
 
+async function seedFeed(authorIds: string[]) {
+  const [adminId, moderadorId, alunoId] = authorIds;
+  const firstContent = "Bora usar a plataforma da comunidade Tec! 🎉";
+
+  const { data: existing } = await admin
+    .from("posts")
+    .select("id")
+    .eq("content", firstContent)
+    .maybeSingle();
+  if (existing) {
+    console.info("• feed de exemplo já existe");
+    return;
+  }
+
+  const { data: post, error } = await admin
+    .from("posts")
+    .insert({ author_id: alunoId, content: firstContent })
+    .select("id")
+    .single();
+  if (error || !post) throw error ?? new Error("falha ao criar post");
+  const postId = (post as { id: string }).id;
+
+  await admin.from("posts").insert({
+    author_id: moderadorId,
+    content:
+      "Bem-vindos ao mural da comunidade! Postem, comentem e curtam. 💙",
+  });
+  await admin.from("comments").insert({
+    post_id: postId,
+    author_id: moderadorId,
+    content: "Boa! Conta pra gente o que você quer ver por aqui.",
+  });
+  await admin.from("post_likes").insert({ post_id: postId, user_id: adminId });
+
+  console.info("✓ feed de exemplo criado");
+}
+
 async function seed(): Promise<void> {
   console.info("Semeando dados de exemplo...\n");
   const ids: string[] = [];
@@ -163,6 +200,7 @@ async function seed(): Promise<void> {
   }
   await seedInvite(ids[0]);
   await seedPoll(ids[0]);
+  await seedFeed(ids);
   console.info("\nSenha de todos os usuários de exemplo: senha123");
 }
 

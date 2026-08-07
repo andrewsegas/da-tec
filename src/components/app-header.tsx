@@ -15,6 +15,12 @@ export function AppHeader() {
           </Link>
           <nav className="flex items-center gap-1 text-sm">
             <Link
+              href="/comunidade"
+              className="text-muted-foreground hover:text-foreground rounded-md px-2 py-1"
+            >
+              Comunidade
+            </Link>
+            <Link
               href="/enquetes"
               className="text-muted-foreground hover:text-foreground rounded-md px-2 py-1"
             >

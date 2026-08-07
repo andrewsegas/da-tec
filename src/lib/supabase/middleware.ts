@@ -7,6 +7,7 @@ const PROTECTED_PREFIXES = [
   "/perfil",
   "/moderacao",
   "/enquetes",
+  "/comunidade",
 ];
 /** Rotas de auth que um usuário logado não deveria acessar. */
 const AUTH_PAGES = ["/login", "/cadastro"];

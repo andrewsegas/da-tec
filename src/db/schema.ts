@@ -8,3 +8,4 @@ export * from "./enums";
 export * from "../modules/profiles/schema";
 export * from "../modules/auth/schema";
 export * from "../modules/polls/schema";
+export * from "../modules/feed/schema";
