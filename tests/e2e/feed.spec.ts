@@ -20,8 +20,8 @@ test("aluno publica, curte e comenta na comunidade", async ({ page }) => {
   await card.getByRole("button", { name: "Curtir" }).click();
   await expect(card.getByRole("button", { name: "Descurtir" })).toBeVisible();
 
-  // Abrir o post e comentar.
-  await card.getByRole("link").first().click();
+  // Abrir o post (link de comentários) e comentar.
+  await card.locator('a[href^="/comunidade/"]').click();
   await page.waitForURL(/\/comunidade\/.+/);
   await page.getByPlaceholder(/escreva um comentário/i).fill("Comentário e2e");
   await page.getByRole("button", { name: "Comentar" }).click();

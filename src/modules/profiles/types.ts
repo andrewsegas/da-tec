@@ -11,6 +11,10 @@ export type ProfileRow = {
   course: string | null;
   period: number | null;
   avatar_url: string | null;
+  bio: string | null;
+  github_username: string | null;
+  linkedin_username: string | null;
+  instagram_username: string | null;
   role: UserRole;
   onboarded_at: string | null;
   created_at: string;

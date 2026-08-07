@@ -15,6 +15,10 @@ export const profiles = pgTable("profiles", {
   course: text("course"),
   period: integer("period"),
   avatarUrl: text("avatar_url"),
+  bio: text("bio"),
+  githubUsername: text("github_username"),
+  linkedinUsername: text("linkedin_username"),
+  instagramUsername: text("instagram_username"),
   role: userRole("role").notNull().default("aluno"),
   onboardedAt: timestamp("onboarded_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })

@@ -33,11 +33,16 @@ export default async function EditarPerfilPage() {
           <ProfileForm
             intent="edit"
             submitLabel="Salvar alterações"
+            showExtras
             defaultValues={{
               fullName: profile.full_name,
               course: profile.course,
               period: profile.period,
               avatarUrl: profile.avatar_url,
+              bio: profile.bio,
+              github: profile.github_username,
+              linkedin: profile.linkedin_username,
+              instagram: profile.instagram_username,
             }}
           />
         </CardContent>

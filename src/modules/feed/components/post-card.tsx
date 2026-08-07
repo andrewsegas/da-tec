@@ -41,7 +41,12 @@ export function PostCard({
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 text-sm">
-              <span className="font-medium">{name}</span>
+              <Link
+                href={`/alunos/${post.author_id}`}
+                className="font-medium hover:underline"
+              >
+                {name}
+              </Link>
               {staff && post.author ? (
                 <span className="bg-secondary text-secondary-foreground rounded-full px-2 py-0.5 text-xs font-medium">
                   {ROLE_LABELS[post.author.role]}

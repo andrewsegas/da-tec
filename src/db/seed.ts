@@ -29,6 +29,8 @@ type SeedUser = {
   role: "aluno" | "moderador" | "admin";
   course: string;
   period: number;
+  bio?: string;
+  github?: string;
 };
 
 const users: SeedUser[] = [
@@ -39,6 +41,8 @@ const users: SeedUser[] = [
     role: "admin",
     course: "Sistemas de Informação",
     period: 8,
+    bio: "Coordeno a plataforma da comunidade Tec. Apaixonada por dados e café.",
+    github: "unisanta-tec",
   },
   {
     email: `moderador@${domain}`,
@@ -47,6 +51,8 @@ const users: SeedUser[] = [
     role: "moderador",
     course: "Análise e Desenvolvimento de Sistemas",
     period: 6,
+    bio: "Diretoria do DA. Bora organizar os campeonatos! 🏆",
+    github: "marcos-mod",
   },
   {
     email: `aluno@${domain}`,
@@ -55,6 +61,8 @@ const users: SeedUser[] = [
     role: "aluno",
     course: "Inteligência Artificial",
     period: 2,
+    bio: "Estudante de IA curtindo a comunidade e aprendendo a contribuir em open source.",
+    github: "alice-ai",
   },
 ];
 
@@ -85,6 +93,8 @@ async function upsertUser(user: SeedUser): Promise<string> {
       role: user.role,
       course: user.course,
       period: user.period,
+      bio: user.bio ?? null,
+      github_username: user.github ?? null,
       onboarded_at: new Date().toISOString(),
     })
     .eq("id", userId);

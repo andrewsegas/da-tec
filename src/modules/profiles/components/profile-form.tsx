@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { emptyFormState } from "@/lib/forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/field-error";
 import { SubmitButton } from "@/components/submit-button";
 import { saveProfileAction } from "@/modules/profiles/actions";
@@ -16,15 +17,25 @@ const selectClass =
 type Props = {
   intent: "onboarding" | "edit";
   submitLabel: string;
+  showExtras?: boolean;
   defaultValues?: {
     fullName?: string;
     course?: string | null;
     period?: number | null;
     avatarUrl?: string | null;
+    bio?: string | null;
+    github?: string | null;
+    linkedin?: string | null;
+    instagram?: string | null;
   };
 };
 
-export function ProfileForm({ intent, submitLabel, defaultValues }: Props) {
+export function ProfileForm({
+  intent,
+  submitLabel,
+  showExtras = false,
+  defaultValues,
+}: Props) {
   const [state, action] = useActionState(saveProfileAction, emptyFormState);
 
   return (
@@ -106,6 +117,56 @@ export function ProfileForm({ intent, submitLabel, defaultValues }: Props) {
         />
         <FieldError messages={state.fieldErrors?.avatarUrl} />
       </div>
+
+      {showExtras ? (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="bio">Bio (opcional)</Label>
+            <Textarea
+              id="bio"
+              name="bio"
+              rows={3}
+              maxLength={300}
+              placeholder="Conte um pouco sobre você, seus interesses, projetos..."
+              defaultValue={defaultValues?.bio ?? ""}
+            />
+            <FieldError messages={state.fieldErrors?.bio} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="github">GitHub</Label>
+              <Input
+                id="github"
+                name="github"
+                placeholder="usuario"
+                defaultValue={defaultValues?.github ?? ""}
+              />
+              <FieldError messages={state.fieldErrors?.github} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="linkedin">LinkedIn</Label>
+              <Input
+                id="linkedin"
+                name="linkedin"
+                placeholder="usuario"
+                defaultValue={defaultValues?.linkedin ?? ""}
+              />
+              <FieldError messages={state.fieldErrors?.linkedin} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="instagram">Instagram</Label>
+              <Input
+                id="instagram"
+                name="instagram"
+                placeholder="usuario"
+                defaultValue={defaultValues?.instagram ?? ""}
+              />
+              <FieldError messages={state.fieldErrors?.instagram} />
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <SubmitButton className="w-full">{submitLabel}</SubmitButton>
     </form>

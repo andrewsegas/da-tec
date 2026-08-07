@@ -121,7 +121,13 @@ export default async function MuralPage() {
                         ) : null}
                       </div>
                       <p className="text-muted-foreground mb-2 text-xs">
-                        {n.author?.full_name ?? "DA"} · {fmt(n.created_at)}
+                        <Link
+                          href={`/alunos/${n.author_id}`}
+                          className="hover:underline"
+                        >
+                          {n.author?.full_name ?? "DA"}
+                        </Link>{" "}
+                        · {fmt(n.created_at)}
                       </p>
                       <p className="break-words whitespace-pre-wrap text-sm">
                         {n.content}
