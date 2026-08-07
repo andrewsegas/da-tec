@@ -9,3 +9,6 @@ export const inviteStatus = pgEnum("invite_status", [
   "aprovado",
   "rejeitado",
 ]);
+
+/** Situação de uma enquete. */
+export const pollStatus = pgEnum("poll_status", ["aberta", "encerrada"]);

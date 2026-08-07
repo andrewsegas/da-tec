@@ -12,7 +12,7 @@ test("cadastro institucional leva ao onboarding e cria o perfil", async ({
   await page.getByRole("button", { name: "Criar conta" }).click();
 
   await page.waitForURL("**/onboarding");
-  await page.getByLabel("Curso").selectOption("Jogos Digitais");
+  await page.getByLabel("Curso").selectOption("Análise e Desenvolvimento de Sistemas");
   await page.getByLabel("Período").selectOption("2");
   await page.getByRole("button", { name: /concluir/i }).click();
 

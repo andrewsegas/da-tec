@@ -84,6 +84,9 @@ export default async function PerfilPage() {
           <Button asChild>
             <Link href="/perfil/editar">Editar perfil</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link href="/enquetes">Enquetes</Link>
+          </Button>
           {staff ? (
             <Button asChild variant="outline">
               <Link href="/moderacao/convites">Convites do DA</Link>

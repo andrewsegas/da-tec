@@ -36,7 +36,7 @@ describe("profileSchema", () => {
   it("coage o período para número e valida o curso", () => {
     const result = profileSchema.safeParse({
       fullName: "Aluna Exemplo",
-      course: "Jogos Digitais",
+      course: "Análise e Desenvolvimento de Sistemas",
       period: "3",
       avatarUrl: "",
     });

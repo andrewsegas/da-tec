@@ -1,11 +1,8 @@
 /** Cursos de Tecnologia da Unisanta (ajustável conforme a grade oficial). */
 export const COURSES = [
-  "Ciência da Computação",
-  "Engenharia de Software",
+  "Sistemas de Informação",
   "Análise e Desenvolvimento de Sistemas",
-  "Jogos Digitais",
-  "Gestão da Tecnologia da Informação",
-  "Redes de Computadores",
+  "Inteligência Artificial",
 ] as const;
 
 export type Course = (typeof COURSES)[number];

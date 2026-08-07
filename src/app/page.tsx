@@ -67,6 +67,11 @@ export default async function Home() {
               <Link href={REPO_URL}>Repositório</Link>
             </Button>
             {profile ? (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/enquetes">Enquetes</Link>
+              </Button>
+            ) : null}
+            {profile ? (
               <Button asChild size="sm">
                 <Link href="/perfil">Meu perfil</Link>
               </Button>

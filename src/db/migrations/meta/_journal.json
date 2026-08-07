@@ -15,6 +15,20 @@
       "when": 1786073516105,
       "tag": "0001_rls_and_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786075518964,
+      "tag": "0002_illegal_mister_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786075522911,
+      "tag": "0003_polls_rls_rpc",
+      "breakpoints": true
     }
   ]
 }

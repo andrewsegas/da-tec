@@ -37,7 +37,7 @@ const users: SeedUser[] = [
     password: "senha123",
     fullName: "Ana Administradora",
     role: "admin",
-    course: "Ciência da Computação",
+    course: "Sistemas de Informação",
     period: 8,
   },
   {
@@ -45,7 +45,7 @@ const users: SeedUser[] = [
     password: "senha123",
     fullName: "Marcos Moderador",
     role: "moderador",
-    course: "Engenharia de Software",
+    course: "Análise e Desenvolvimento de Sistemas",
     period: 6,
   },
   {
@@ -53,7 +53,7 @@ const users: SeedUser[] = [
     password: "senha123",
     fullName: "Alice Aluna",
     role: "aluno",
-    course: "Jogos Digitais",
+    course: "Inteligência Artificial",
     period: 2,
   },
 ];
@@ -118,6 +118,43 @@ async function seedInvite(invitedBy: string) {
   console.info(`✓ convite aprovado para ${email}`);
 }
 
+async function seedPoll(createdBy: string) {
+  const question = "Qual deve ser o nome oficial da plataforma?";
+  const { data: existing } = await admin
+    .from("polls")
+    .select("id")
+    .eq("question", question)
+    .maybeSingle();
+  if (existing) {
+    console.info("• enquete de exemplo já existe");
+    return;
+  }
+
+  const { data: poll, error } = await admin
+    .from("polls")
+    .insert({
+      question,
+      description: "Primeira votação simbólica da comunidade Tec.",
+      hide_results: false,
+      created_by: createdBy,
+    })
+    .select("id")
+    .single();
+  if (error || !poll) throw error ?? new Error("falha ao criar enquete");
+
+  const pollId = (poll as { id: string }).id;
+  const labels = ["da-tec", "TecUnisanta", "ComunidadeTec", "SantaTech"];
+  const { error: optionsError } = await admin.from("poll_options").insert(
+    labels.map((label, index) => ({
+      poll_id: pollId,
+      label,
+      position: index,
+    })),
+  );
+  if (optionsError) throw optionsError;
+  console.info("✓ enquete de exemplo criada");
+}
+
 async function seed(): Promise<void> {
   console.info("Semeando dados de exemplo...\n");
   const ids: string[] = [];
@@ -125,6 +162,7 @@ async function seed(): Promise<void> {
     ids.push(await upsertUser(user));
   }
   await seedInvite(ids[0]);
+  await seedPoll(ids[0]);
   console.info("\nSenha de todos os usuários de exemplo: senha123");
 }
 

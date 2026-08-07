@@ -2,7 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Rotas que exigem usuário autenticado. */
-const PROTECTED_PREFIXES = ["/onboarding", "/perfil", "/moderacao"];
+const PROTECTED_PREFIXES = [
+  "/onboarding",
+  "/perfil",
+  "/moderacao",
+  "/enquetes",
+];
 /** Rotas de auth que um usuário logado não deveria acessar. */
 const AUTH_PAGES = ["/login", "/cadastro"];
 

@@ -14,7 +14,7 @@ describe("Button", () => {
   it("aplica a variante ao usar asChild em um link", () => {
     render(
       <Button asChild variant="outline">
-        <a href="/enquetes">Enquetes</a>
+        <a href="#exemplo">Enquetes</a>
       </Button>,
     );
     const link = screen.getByRole("link", { name: "Enquetes" });
