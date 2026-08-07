@@ -12,3 +12,6 @@ export const inviteStatus = pgEnum("invite_status", [
 
 /** Situação de uma enquete. */
 export const pollStatus = pgEnum("poll_status", ["aberta", "encerrada"]);
+
+/** Situação de um jogo/competição no mural. */
+export const gameStatus = pgEnum("game_status", ["agendado", "encerrado"]);

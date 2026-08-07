@@ -192,6 +192,46 @@ async function seedFeed(authorIds: string[]) {
   console.info("✓ feed de exemplo criado");
 }
 
+async function seedMural(authorIds: string[]) {
+  const [adminId, moderadorId] = authorIds;
+  const title = "Bem-vindos ao mural do DA Tec!";
+
+  const { data: existing } = await admin
+    .from("news")
+    .select("id")
+    .eq("title", title)
+    .maybeSingle();
+  if (existing) {
+    console.info("• mural de exemplo já existe");
+    return;
+  }
+
+  const day = 86_400_000;
+  await admin.from("news").insert({
+    author_id: moderadorId,
+    title,
+    content:
+      "Aqui você acompanha notícias, jogos e eventos da comunidade Tec. Fiquem ligados! 💙",
+  });
+  await admin.from("games").insert({
+    created_by: moderadorId,
+    modality: "Futsal",
+    opponent: "Engenharia",
+    location: "Ginásio da Unisanta",
+    starts_at: new Date(Date.now() + 7 * day).toISOString(),
+    status: "agendado",
+  });
+  await admin.from("events").insert({
+    created_by: adminId,
+    title: "Semana da Tecnologia",
+    description: "Palestras, oficinas e networking dos cursos de Tecnologia.",
+    location: "Bloco C",
+    starts_at: new Date(Date.now() + 14 * day).toISOString(),
+  });
+
+  console.info("✓ mural de exemplo criado");
+}
+
 async function seed(): Promise<void> {
   console.info("Semeando dados de exemplo...\n");
   const ids: string[] = [];
@@ -201,6 +241,7 @@ async function seed(): Promise<void> {
   await seedInvite(ids[0]);
   await seedPoll(ids[0]);
   await seedFeed(ids);
+  await seedMural(ids);
   console.info("\nSenha de todos os usuários de exemplo: senha123");
 }
 

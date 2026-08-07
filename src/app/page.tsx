@@ -68,6 +68,11 @@ export default async function Home() {
             </Button>
             {profile ? (
               <Button asChild variant="ghost" size="sm">
+                <Link href="/mural">Mural</Link>
+              </Button>
+            ) : null}
+            {profile ? (
+              <Button asChild variant="ghost" size="sm">
                 <Link href="/comunidade">Comunidade</Link>
               </Button>
             ) : null}
