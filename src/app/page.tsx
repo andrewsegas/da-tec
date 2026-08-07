@@ -10,6 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { getCurrentProfile } from "@/modules/profiles/queries";
 
 const REPO_URL = "https://github.com/unisanta-tec/da-tec";
 
@@ -51,7 +52,9 @@ const modules = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const profile = await getCurrentProfile();
+
   return (
     <div className="flex flex-1 flex-col">
       <header className="border-border/60 border-b">
@@ -63,6 +66,15 @@ export default function Home() {
             <Button asChild variant="ghost" size="sm">
               <Link href={REPO_URL}>Repositório</Link>
             </Button>
+            {profile ? (
+              <Button asChild size="sm">
+                <Link href="/perfil">Meu perfil</Link>
+              </Button>
+            ) : (
+              <Button asChild size="sm">
+                <Link href="/login">Entrar</Link>
+              </Button>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -84,9 +96,15 @@ export default function Home() {
             ferramenta pedagógica construída pelos próprios alunos.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href={REPO_URL}>Contribuir no repositório</Link>
-            </Button>
+            {profile ? (
+              <Button asChild size="lg">
+                <Link href="/perfil">Ir para meu perfil</Link>
+              </Button>
+            ) : (
+              <Button asChild size="lg">
+                <Link href="/cadastro">Participar da comunidade</Link>
+              </Button>
+            )}
             <Button asChild size="lg" variant="outline">
               <Link href="#modulos">Conhecer os módulos</Link>
             </Button>

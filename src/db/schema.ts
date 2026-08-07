@@ -1,10 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
-
 /**
- * Schema do banco (Drizzle ORM).
+ * Schema do banco (Drizzle ORM) — ponto único de reexport.
  *
- * Etapa 0 — Fundação: apenas o enum de papéis. As tabelas de cada domínio
- * (profiles, polls, petitions, news, reviews) são adicionadas nas suas fases,
- * cada uma no seu módulo, e reexportadas aqui.
+ * Enums compartilhados ficam em `./enums`; cada domínio define suas tabelas no
+ * próprio módulo (`src/modules/<dominio>/schema.ts`) e são reexportadas aqui.
  */
-export const userRole = pgEnum("user_role", ["aluno", "moderador", "admin"]);
+export * from "./enums";
+export * from "../modules/profiles/schema";
+export * from "../modules/auth/schema";
