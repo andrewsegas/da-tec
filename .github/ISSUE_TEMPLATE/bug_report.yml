@@ -1,0 +1,49 @@
+name: "🐛 Reportar bug"
+description: "Algo não está funcionando como deveria"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por ajudar a melhorar o **da-tec**! Preencha o máximo que puder —
+        quanto mais detalhes, mais rápido a gente resolve. 🙏
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o problema com clareza.
+      placeholder: Ao clicar em "Votar" na enquete X, a página trava...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      description: Lista numerada do que você fez.
+      placeholder: |
+        1. Entrei em `/enquetes/...`
+        2. Cliquei em "Votar"
+        3. Vi o erro...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que você esperava que acontecesse?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Navegador, sistema operacional, se é local ou produção.
+      placeholder: Chrome 130, Windows 11, ambiente local
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Prints ou logs (opcional)
+      description: Cole imagens ou mensagens de erro do console.
+    validations:
+      required: false

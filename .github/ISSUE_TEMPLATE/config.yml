@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Dúvida sobre como contribuir
+    url: https://github.com/andrewsegas/da-tec/blob/main/CONTRIBUTING.md
+    about: Primeira vez contribuindo? Comece pelo guia de contribuição.
+  - name: 🔒 Reportar vulnerabilidade de segurança
+    url: https://github.com/andrewsegas/da-tec/blob/main/SECURITY.md
+    about: NÃO abra issue pública para falhas de segurança. Veja como reportar em privado.

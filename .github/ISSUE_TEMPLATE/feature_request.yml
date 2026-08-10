@@ -1,0 +1,30 @@
+name: "💡 Sugerir funcionalidade"
+description: "Uma ideia ou melhoria para a plataforma"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Toda ideia é bem-vinda! Antes de abrir, dê uma olhada no
+        [`PLANO.md`](../blob/main/PLANO.md) para ver se já não está previsto.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema isso resolve?
+      description: Descreva a necessidade ou o incômodo por trás da ideia.
+      placeholder: Alunos não conseguem saber quando uma petição foi respondida...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução que você imagina
+      description: Como isso funcionaria, na sua visão?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas (opcional)
+    validations:
+      required: false
