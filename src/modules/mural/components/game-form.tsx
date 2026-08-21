@@ -19,6 +19,7 @@ const selectClass =
   "border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none";
 
 type Defaults = {
+  teamId?: string | null;
   modality?: string;
   opponent?: string;
   location?: string | null;
@@ -33,11 +34,13 @@ export function GameForm({
   submitLabel,
   gameId,
   defaults,
+  teams = [],
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
   gameId?: string;
   defaults?: Defaults;
+  teams?: { id: string; label: string }[];
 }) {
   const [state, formAction] = useActionState(action, emptyFormState);
 
@@ -52,6 +55,26 @@ export function GameForm({
         >
           {state.error}
         </p>
+      ) : null}
+
+      {teams.length > 0 ? (
+        <div className="space-y-2">
+          <Label htmlFor="teamId">Equipe do DA (opcional)</Label>
+          <select
+            id="teamId"
+            name="teamId"
+            defaultValue={defaults?.teamId ?? ""}
+            className={selectClass}
+          >
+            <option value="">Jogo sem equipe vinculada</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.label}
+              </option>
+            ))}
+          </select>
+          <FieldError messages={state.fieldErrors?.teamId} />
+        </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">

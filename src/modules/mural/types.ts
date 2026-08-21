@@ -14,6 +14,7 @@ export type NewsRow = {
 
 export type GameRow = {
   id: string;
+  team_id: string | null;
   modality: string;
   opponent: string;
   location: string | null;

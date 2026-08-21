@@ -8,12 +8,12 @@ import { signOutAction } from "@/modules/auth/actions";
 export function AppHeader() {
   return (
     <header className="border-border/60 border-b">
-      <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-4">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Link href="/" className="text-lg font-semibold tracking-tight">
             da<span className="text-primary">-tec</span>
           </Link>
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="flex flex-wrap items-center gap-1 text-sm">
             <Link
               href="/mural"
               className="text-muted-foreground hover:text-foreground rounded-md px-2 py-1"
@@ -31,6 +31,12 @@ export function AppHeader() {
               className="text-muted-foreground hover:text-foreground rounded-md px-2 py-1"
             >
               Enquetes
+            </Link>
+            <Link
+              href="/esportes"
+              className="text-muted-foreground hover:text-foreground rounded-md px-2 py-1"
+            >
+              Esportes
             </Link>
             <Link
               href="/perfil"

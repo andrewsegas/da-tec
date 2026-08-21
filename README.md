@@ -3,7 +3,8 @@
 Plataforma **open source** de comunidade e participação estudantil do Diretório
 Acadêmico dos cursos de Tecnologia da Unisanta. Aqui os alunos **votam**, criam
 **abaixo-assinados**, acompanham o **mural** do DA (notícias, jogos e eventos) e
-**avaliam disciplinas** — tudo em um só lugar.
+**avaliam disciplinas**, consultam os **times esportivos** e se inscrevem em
+**peneiras** — tudo em um só lugar.
 
 O projeto é também **ferramenta pedagógica**: os próprios alunos contribuem no
 repositório. Se você nunca contribuiu com open source, comece por aqui — veja o
@@ -11,6 +12,41 @@ repositório. Se você nunca contribuiu com open source, comece por aqui — vej
 
 > 📌 Antes de programar, leia o [`PLANO.md`](./PLANO.md) (visão, módulos e fases)
 > e o [`CLAUDE.md`](./CLAUDE.md) (regras de negócio e convenções).
+
+## Funcionalidades
+
+- Autenticação com e-mail institucional e perfis públicos dos alunos;
+- enquetes, feed da comunidade e mural com notícias, jogos e eventos;
+- catálogo de modalidades e equipes esportivas do DA;
+- inscrições em peneiras e acompanhamento do resultado pelo perfil;
+- gestão de modalidades, times, peneiras, candidatos e elencos pela diretoria.
+
+### Esportes, equipes e peneiras
+
+Todo usuário autenticado pode abrir **Esportes** no menu ou acessar
+[`/esportes`](http://localhost:3000/esportes) para consultar as modalidades
+ativas. Ao selecionar uma modalidade, a página `/esportes/[slug]` mostra os
+times existentes, categoria, temporada, situação, responsável do DA, próximas
+peneiras e elenco oficial.
+
+Quando uma peneira está agendada e dentro do prazo, o aluno pode se inscrever
+ou cancelar a própria inscrição. O andamento aparece tanto na modalidade quanto
+em **Meu perfil**, na seção **Meus esportes**. Uma aprovação feita pela diretoria
+inclui o aluno automaticamente no elenco da equipe.
+
+Usuários com papel `moderador` ou `admin` acessam
+[`/moderacao/esportes`](http://localhost:3000/moderacao/esportes) para:
+
+- cadastrar, arquivar e reativar modalidades;
+- criar equipes por categoria e temporada, com responsável opcional;
+- agendar peneiras e encerrar ou cancelar processos seletivos;
+- classificar inscrições como inscrita, lista de espera, aprovada ou não
+  selecionada;
+- definir atletas, capitães e técnicos e manter o elenco;
+- consultar também modalidades e equipes inativas.
+
+Os jogos permanecem no domínio do mural. Ao criar ou editar um jogo, a
+diretoria pode vinculá-lo opcionalmente a uma equipe já cadastrada em Esportes.
 
 ## Stack
 
@@ -45,11 +81,19 @@ cp .env.example .env         # variáveis do Drizzle (migrations/seed)
 # 4. Aplique o schema no banco
 npm run db:push
 
-# 5. Rode a aplicação
+# 5. (Opcional) Crie usuários e dados de demonstração
+npm run db:seed
+
+# 6. Rode a aplicação
 npm run dev
 ```
 
 Abra <http://localhost:3000>.
+
+O seed inclui uma modalidade de futsal, um time, uma peneira, uma inscrição e
+um jogo vinculado ao time. Ele também cria `admin`, `moderador` e `aluno` no
+domínio configurado por `NEXT_PUBLIC_UNISANTA_EMAIL_DOMAIN`; a senha de
+desenvolvimento de todos é `senha123`.
 
 ## Scripts
 
@@ -73,7 +117,7 @@ Abra <http://localhost:3000>.
 src/
   app/            # rotas (App Router), server components por padrão
   components/     # UI compartilhada (shadcn em components/ui)
-  modules/        # domínios: auth, profiles, polls, petitions, news, reviews
+  modules/        # domínios: auth, profiles, polls, feed, mural e sports
   db/             # schema Drizzle, migrations, seed
   lib/            # helpers, clients (supabase), validações (zod)
 tests/            # vitest (unit) + playwright (e2e)

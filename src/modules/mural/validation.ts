@@ -14,6 +14,7 @@ export const newsSchema = z.object({
 });
 
 export const gameSchema = z.object({
+  teamId: z.union([z.uuid("Equipe inválida."), z.literal("")]).optional(),
   modality: z
     .string()
     .trim()

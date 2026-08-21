@@ -10,3 +10,4 @@ export * from "../modules/auth/schema";
 export * from "../modules/polls/schema";
 export * from "../modules/feed/schema";
 export * from "../modules/mural/schema";
+export * from "../modules/sports/schema";

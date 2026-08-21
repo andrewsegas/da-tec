@@ -9,6 +9,7 @@ import {
 
 import { gameStatus } from "../../db/enums";
 import { profiles } from "../profiles/schema";
+import { teams } from "../sports/schema";
 
 /** Notícia / comunicado do DA (criada por moderadores). */
 export const news = pgTable("news", {
@@ -30,6 +31,9 @@ export const news = pgTable("news", {
 export const games = pgTable("games", {
   id: uuid("id").primaryKey().defaultRandom(),
   createdBy: uuid("created_by").references(() => profiles.id, {
+    onDelete: "set null",
+  }),
+  teamId: uuid("team_id").references(() => teams.id, {
     onDelete: "set null",
   }),
   modality: text("modality").notNull(),

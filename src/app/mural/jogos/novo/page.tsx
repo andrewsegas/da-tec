@@ -13,6 +13,7 @@ import { getCurrentProfile } from "@/modules/profiles/queries";
 import { isStaff } from "@/modules/profiles/types";
 import { GameForm } from "@/modules/mural/components/game-form";
 import { createGameAction } from "@/modules/mural/actions";
+import { listSports } from "@/modules/sports/queries";
 
 export const metadata: Metadata = { title: "Novo jogo" };
 
@@ -20,6 +21,13 @@ export default async function NovoJogoPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
   if (!isStaff(profile.role)) redirect("/mural");
+  const sports = await listSports(true);
+  const teams = sports.flatMap((sport) =>
+    sport.teams.map((team) => ({
+      id: team.id,
+      label: `${sport.name} — ${team.name} (${team.category})`,
+    })),
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -36,7 +44,7 @@ export default async function NovoJogoPage() {
             <CardTitle>Novo jogo</CardTitle>
           </CardHeader>
           <CardContent>
-            <GameForm action={createGameAction} submitLabel="Criar jogo" />
+            <GameForm action={createGameAction} submitLabel="Criar jogo" teams={teams} />
           </CardContent>
         </Card>
       </main>

@@ -14,6 +14,7 @@ import { isStaff } from "@/modules/profiles/types";
 import { GameForm } from "@/modules/mural/components/game-form";
 import { updateGameAction } from "@/modules/mural/actions";
 import { getGame } from "@/modules/mural/queries";
+import { listSports } from "@/modules/sports/queries";
 
 export const metadata: Metadata = { title: "Editar jogo" };
 
@@ -28,8 +29,14 @@ export default async function EditarJogoPage({
   if (!profile) redirect("/login");
   if (!isStaff(profile.role)) redirect("/mural");
 
-  const game = await getGame(id);
+  const [game, sports] = await Promise.all([getGame(id), listSports(true)]);
   if (!game) notFound();
+  const teams = sports.flatMap((sport) =>
+    sport.teams.map((team) => ({
+      id: team.id,
+      label: `${sport.name} — ${team.name} (${team.category})`,
+    })),
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -50,7 +57,9 @@ export default async function EditarJogoPage({
               action={updateGameAction}
               submitLabel="Salvar alterações"
               gameId={game.id}
+              teams={teams}
               defaults={{
+                teamId: game.team_id,
                 modality: game.modality,
                 opponent: game.opponent,
                 location: game.location,

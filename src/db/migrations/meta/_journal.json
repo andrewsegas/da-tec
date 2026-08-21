@@ -64,6 +64,20 @@
       "when": 1786111241655,
       "tag": "0008_curved_kinsey_walden",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787320501918,
+      "tag": "0009_daffy_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787320855255,
+      "tag": "0010_messy_luminals",
+      "breakpoints": true
     }
   ]
 }

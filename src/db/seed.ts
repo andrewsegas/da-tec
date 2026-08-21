@@ -202,7 +202,98 @@ async function seedFeed(authorIds: string[]) {
   console.info("✓ feed de exemplo criado");
 }
 
-async function seedMural(authorIds: string[]) {
+async function seedSports(authorIds: string[]): Promise<string> {
+  const [, moderadorId, alunoId] = authorIds;
+  const { data: sport, error: sportError } = await admin
+    .from("sports")
+    .upsert(
+      {
+        name: "Futsal",
+        slug: "futsal",
+        description:
+          "Equipes de futsal da comunidade Tec para jogos e competições universitárias.",
+        created_by: moderadorId,
+      },
+      { onConflict: "slug" },
+    )
+    .select("id")
+    .single();
+  if (sportError || !sport) throw sportError ?? new Error("falha ao criar esporte");
+  const sportId = (sport as { id: string }).id;
+
+  const { data: team, error: teamError } = await admin
+    .from("teams")
+    .upsert(
+      {
+        sport_id: sportId,
+        name: "Futsal Tec",
+        category: "Misto",
+        season: String(new Date().getFullYear()),
+        description: "Equipe da Tecnologia para os Jogos Universitários.",
+        responsible_id: moderadorId,
+        created_by: moderadorId,
+      },
+      { onConflict: "sport_id,name,season" },
+    )
+    .select("id")
+    .single();
+  if (teamError || !team) throw teamError ?? new Error("falha ao criar equipe");
+  const teamId = (team as { id: string }).id;
+
+  await admin.from("team_members").upsert(
+    {
+      team_id: teamId,
+      user_id: moderadorId,
+      role: "tecnico",
+      active: true,
+    },
+    { onConflict: "team_id,user_id" },
+  );
+
+  const tryoutTitle = "Peneira para os Jogos Universitários";
+  const { data: existingTryout } = await admin
+    .from("tryouts")
+    .select("id")
+    .eq("team_id", teamId)
+    .eq("title", tryoutTitle)
+    .maybeSingle();
+
+  let tryoutId = (existingTryout as { id?: string } | null)?.id;
+  if (!tryoutId) {
+    const day = 86_400_000;
+    const { data: tryout, error: tryoutError } = await admin
+      .from("tryouts")
+      .insert({
+        team_id: teamId,
+        title: tryoutTitle,
+        description: "Leve documento, roupa esportiva e chegue com 20 minutos de antecedência.",
+        location: "Ginásio da Unisanta",
+        registration_deadline: new Date(Date.now() + 5 * day).toISOString(),
+        starts_at: new Date(Date.now() + 7 * day).toISOString(),
+        max_spots: 14,
+        created_by: moderadorId,
+      })
+      .select("id")
+      .single();
+    if (tryoutError || !tryout) {
+      throw tryoutError ?? new Error("falha ao criar peneira");
+    }
+    tryoutId = (tryout as { id: string }).id;
+  }
+
+  const { error: registrationError } = await admin
+    .from("tryout_registrations")
+    .upsert(
+      { tryout_id: tryoutId, user_id: alunoId, status: "inscrito" },
+      { onConflict: "tryout_id,user_id" },
+    );
+  if (registrationError) throw registrationError;
+
+  console.info("✓ modalidade, equipe e peneira de exemplo criadas");
+  return teamId;
+}
+
+async function seedMural(authorIds: string[], teamId: string) {
   const [adminId, moderadorId] = authorIds;
   const title = "Bem-vindos ao mural do DA Tec!";
 
@@ -225,6 +316,7 @@ async function seedMural(authorIds: string[]) {
   });
   await admin.from("games").insert({
     created_by: moderadorId,
+    team_id: teamId,
     modality: "Futsal",
     opponent: "Engenharia",
     location: "Ginásio da Unisanta",
@@ -251,7 +343,8 @@ async function seed(): Promise<void> {
   await seedInvite(ids[0]);
   await seedPoll(ids[0]);
   await seedFeed(ids);
-  await seedMural(ids);
+  const teamId = await seedSports(ids);
+  await seedMural(ids, teamId);
   console.info("\nSenha de todos os usuários de exemplo: senha123");
 }
 

@@ -65,6 +65,7 @@ export async function deleteNewsAction(formData: FormData): Promise<void> {
 function parseGame(formData: FormData) {
   const startsAt = parseDateTime(formData.get("startsAt") as string | null);
   const parsed = gameSchema.safeParse({
+    teamId: formData.get("teamId") ?? undefined,
     modality: formData.get("modality"),
     opponent: formData.get("opponent"),
     location: formData.get("location") ?? undefined,
@@ -89,10 +90,11 @@ export async function createGameAction(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { modality, opponent, location, status, homeScore, awayScore } =
+  const { teamId, modality, opponent, location, status, homeScore, awayScore } =
     parsed.data;
   const { error } = await supabase.from("games").insert({
     created_by: user.id,
+    team_id: teamId || null,
     modality,
     opponent,
     location: location && location.length > 0 ? location : null,
@@ -121,11 +123,12 @@ export async function updateGameAction(
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) };
 
   const supabase = await createClient();
-  const { modality, opponent, location, status, homeScore, awayScore } =
+  const { teamId, modality, opponent, location, status, homeScore, awayScore } =
     parsed.data;
   const { error } = await supabase
     .from("games")
     .update({
+      team_id: teamId || null,
       modality,
       opponent,
       location: location && location.length > 0 ? location : null,

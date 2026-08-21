@@ -8,6 +8,8 @@ import { signOutAction } from "@/modules/auth/actions";
 import { getCurrentProfile } from "@/modules/profiles/queries";
 import { isStaff } from "@/modules/profiles/types";
 import { ProfileView } from "@/modules/profiles/components/profile-view";
+import { getMySports } from "@/modules/sports/queries";
+import { MySports } from "@/modules/sports/components/my-sports";
 
 export const metadata: Metadata = { title: "Meu perfil" };
 
@@ -17,6 +19,7 @@ export default async function PerfilPage() {
   if (!profile.onboarded_at) redirect("/onboarding");
 
   const staff = isStaff(profile.role);
+  const sports = await getMySports(profile.id);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -38,6 +41,10 @@ export default async function PerfilPage() {
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
         <ProfileView profile={profile} />
+        <MySports
+          registrations={sports.registrations}
+          memberships={sports.memberships}
+        />
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Button asChild>
@@ -52,10 +59,18 @@ export default async function PerfilPage() {
           <Button asChild variant="outline">
             <Link href="/enquetes">Enquetes</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link href="/esportes">Esportes</Link>
+          </Button>
           {staff ? (
-            <Button asChild variant="outline">
-              <Link href="/moderacao/convites">Convites do DA</Link>
-            </Button>
+            <>
+              <Button asChild variant="outline">
+                <Link href="/moderacao/convites">Convites do DA</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/moderacao/esportes">Gestão de esportes</Link>
+              </Button>
+            </>
           ) : null}
         </div>
       </main>
