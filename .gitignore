@@ -34,6 +34,12 @@ yarn-error.log*
 .env*
 !.env.example
 
+# deploy (gerados na VPS — segredos, dados e arquivos baixados do Supabase)
+!deploy/.env.example
+/deploy/supabase/
+/deploy/data/
+/deploy/backups/
+
 # vercel
 .vercel
 

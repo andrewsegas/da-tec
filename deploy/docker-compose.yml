@@ -1,0 +1,323 @@
+# da-tec em uma VPS: app Next.js + Supabase self-hosted (enxuto).
+#
+# Baseado no docker-compose oficial do Supabase (supabase/supabase/docker),
+# mantendo só o que o app usa: Postgres, Auth, REST, Realtime, gateway (Envoy)
+# e Studio/Meta para administração. Storage, Edge Functions, Supavisor e
+# Analytics ficaram de fora para caber numa VPS pequena (1 vCPU / 4 GB).
+#
+# Roteamento (Traefik, que já roda na VPS com Let's Encrypt):
+#   https://$DOMAIN/auth/v1, /rest/v1, /realtime/v1  → gateway do Supabase
+#   https://$DOMAIN/*                                 → app Next.js
+# O Studio NÃO é exposto: acesse por túnel SSH (veja deploy/README.md).
+#
+# Uso (dentro de deploy/):
+#   docker compose up -d --build
+#   docker compose run --rm migrate
+
+name: datec
+
+x-db-env: &db-env
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: postgres
+
+services:
+  app:
+    container_name: datec-app
+    build:
+      context: ..
+      target: runner
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: https://${DOMAIN}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+        NEXT_PUBLIC_UNISANTA_EMAIL_DOMAIN: ${UNISANTA_EMAIL_DOMAIN}
+    image: datec-app:latest
+    restart: unless-stopped
+    # O servidor do Next chama o Supabase pela URL pública. Na VPS o hostname
+    # resolve para 127.0.1.1 (/etc/hosts), que dentro do container não é o
+    # Traefik — então apontamos o domínio para o host explicitamente.
+    extra_hosts:
+      - ${DOMAIN}:host-gateway
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: https://${DOMAIN}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+      NEXT_PUBLIC_UNISANTA_EMAIL_DOMAIN: ${UNISANTA_EMAIL_DOMAIN}
+    depends_on:
+      api-gw:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=datec_default
+      - traefik.http.routers.datec-app.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.datec-app.entrypoints=websecure
+      - traefik.http.routers.datec-app.tls.certresolver=letsencrypt
+      - traefik.http.routers.datec-app.priority=1
+      - traefik.http.routers.datec-app.middlewares=datec-headers
+      - traefik.http.services.datec-app.loadbalancer.server.port=3000
+      # Fase de testes: não indexar em buscadores + cabeçalhos de segurança.
+      - traefik.http.middlewares.datec-headers.headers.customresponseheaders.X-Robots-Tag=${ROBOTS_TAG:-noindex, nofollow}
+      - traefik.http.middlewares.datec-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.datec-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.datec-headers.headers.frameDeny=true
+      - traefik.http.middlewares.datec-headers.headers.referrerPolicy=strict-origin-when-cross-origin
+
+  # Migrations do Drizzle e seed. Não sobe com `up`; rode sob demanda:
+  #   docker compose run --rm migrate
+  migrate:
+    build:
+      context: ..
+      target: tools
+    image: datec-tools:latest
+    profiles: [tools]
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      NEXT_PUBLIC_SUPABASE_URL: http://api-gw:8000
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      NEXT_PUBLIC_UNISANTA_EMAIL_DOMAIN: ${UNISANTA_EMAIL_DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  studio:
+    container_name: supabase-studio
+    image: supabase/studio:2026.10.12-sha-3699278
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})\""
+        ]
+      timeout: 10s
+      interval: 10s
+      retries: 5
+      start_period: 40s
+    environment:
+      <<: *db-env
+      HOSTNAME: "0.0.0.0"
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER_READ_WRITE: postgres
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+      PGRST_DB_SCHEMAS: public,graphql_public
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      DEFAULT_ORGANIZATION_NAME: da-tec
+      DEFAULT_PROJECT_NAME: da-tec
+      SUPABASE_URL: http://api-gw:8000
+      SUPABASE_PUBLIC_URL: https://${DOMAIN}
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${JWT_SECRET}
+      ENABLED_FEATURES_LOGS_ALL: "false"
+
+  # Gateway (Envoy) — mesmo config do upstream, baixado por deploy/setup.sh.
+  api-gw:
+    container_name: supabase-envoy
+    image: envoyproxy/envoy:v1.39.1
+    restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - envoy
+          - kong
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/127.0.0.1/8000'"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      studio:
+        condition: service_healthy
+    # Só em localhost: o público chega pelo Traefik; o Studio, por túnel SSH.
+    ports:
+      - 127.0.0.1:8000:8000/tcp
+    volumes:
+      - ./supabase/volumes/api/envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+      - ./supabase/volumes/api/envoy/cds.yaml:/etc/envoy/cds.yaml:ro
+      - ./supabase/volumes/api/envoy/lds.template.yaml:/etc/envoy/lds.template.yaml:ro
+      - ./supabase/volumes/api/envoy/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      SUPABASE_PUBLIC_URL: https://${DOMAIN}
+      DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
+    entrypoint: ["/bin/sh", "/docker-entrypoint.sh"]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=datec_default
+      - traefik.http.routers.datec-supabase.rule=Host(`${DOMAIN}`) && (PathPrefix(`/auth/v1`) || PathPrefix(`/rest/v1`) || PathPrefix(`/realtime/v1`))
+      - traefik.http.routers.datec-supabase.entrypoints=websecure
+      - traefik.http.routers.datec-supabase.tls.certresolver=letsencrypt
+      - traefik.http.routers.datec-supabase.priority=100
+      - traefik.http.services.datec-supabase.loadbalancer.server.port=8000
+
+  auth:
+    container_name: supabase-auth
+    image: supabase/gotrue:v2.197.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: https://${DOMAIN}/auth/v1
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: https://${DOMAIN}
+      GOTRUE_URI_ALLOW_LIST: https://${DOMAIN}/**
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: ${JWT_EXPIRY}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_ISSUER: https://${DOMAIN}/auth/v1
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      GOTRUE_SMS_AUTOCONFIRM: "false"
+      # Sem SMTP configurado, o cadastro é confirmado automaticamente (como no
+      # ambiente local). Com SMTP, troque para "false" — veja deploy/README.md.
+      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM}
+      GOTRUE_MAILER_URLPATHS_INVITE: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
+      GOTRUE_SMTP_HOST: ${SMTP_HOST}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT}
+      GOTRUE_SMTP_USER: ${SMTP_USER}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME}
+      GOTRUE_PASSWORD_MIN_LENGTH: 8
+
+  rest:
+    container_name: supabase-rest
+    image: postgrest/postgrest:v14.18
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "postgrest", "--ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,graphql_public
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_ADMIN_SERVER_PORT: 3001
+      PGRST_ADMIN_SERVER_HOST: localhost
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY}
+    command: ["postgrest"]
+
+  realtime:
+    # O nome parece estranho mas é proposital: o Realtime extrai o tenant id
+    # do subdomínio ("realtime-dev").
+    container_name: realtime-dev.supabase-realtime
+    image: supabase/realtime:v2.143.3
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sSfL --head -o /dev/null -H \"Authorization: Bearer ${ANON_KEY}\" http://localhost:4000/api/tenants/realtime-dev/health"
+        ]
+      timeout: 5s
+      interval: 30s
+      retries: 3
+      start_period: 10s
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
+      DB_ENC_KEY: ${REALTIME_DB_ENC_KEY}
+      API_JWT_SECRET: ${JWT_SECRET}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      METRICS_JWT_SECRET: ${JWT_SECRET}
+      ERL_AFLAGS: -proto_dist inet_tcp
+      DNS_NODES: "''"
+      RLIMIT_NOFILE: "10000"
+      APP_NAME: realtime
+      SEED_SELF_HOST: "true"
+      RUN_JANITOR: "true"
+      DISABLE_HEALTHCHECK_LOGGING: "true"
+
+  meta:
+    container_name: supabase-meta
+    image: supabase/postgres-meta:v0.100.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+
+  db:
+    container_name: supabase-db
+    image: supabase/postgres:17.6.1.136
+    restart: unless-stopped
+    volumes:
+      - ./supabase/volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      - ./supabase/volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
+      - ./supabase/volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      - ./supabase/volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      - ./supabase/volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
+      - ./supabase/volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
+      - ./supabase/volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
+      # Dados do Postgres (fazer backup! veja deploy/scripts/backup.sh)
+      - ./data/db:/var/lib/postgresql/data:Z
+      - db-config:/etc/postgresql-custom
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_EXP: ${JWT_EXPIRY}
+    command:
+      [
+        "postgres",
+        "-c", "config_file=/etc/postgresql/postgresql.conf",
+        "-c", "log_min_messages=fatal",
+        # Ajustado para VPS de 4 GB compartilhada com o resto da stack.
+        "-c", "shared_buffers=256MB",
+        "-c", "effective_cache_size=1GB",
+        "-c", "max_connections=100"
+      ]
+
+volumes:
+  db-config:
