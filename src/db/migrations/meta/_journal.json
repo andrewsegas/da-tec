@@ -78,6 +78,13 @@
       "when": 1787320855255,
       "tag": "0010_messy_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792696821872,
+      "tag": "0011_signup_gate",
+      "breakpoints": true
     }
   ]
 }

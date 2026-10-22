@@ -1,0 +1,16 @@
+.git
+.github
+.next
+node_modules
+coverage
+test-results
+playwright-report
+blob-report
+*.tsbuildinfo
+.env*
+!.env.example
+deploy
+supabase/.branches
+supabase/.temp
+Dockerfile
+.dockerignore

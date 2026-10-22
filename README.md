@@ -55,7 +55,8 @@ diretoria pode vinculá-lo opcionalmente a uma equipe já cadastrada em Esportes
 - **Supabase** — PostgreSQL, Auth, Realtime e RLS em todas as tabelas
 - **Drizzle ORM** — migrations versionadas em `src/db/migrations/`
 - **Vitest** (unit/integração) + **Playwright** (e2e)
-- Deploy: **Vercel** + **Supabase**
+- Deploy: **Docker** em VPS própria, com Supabase self-hosted — veja
+  [`deploy/README.md`](./deploy/README.md)
 
 ## Pré-requisitos
 
