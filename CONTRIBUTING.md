@@ -31,7 +31,8 @@ npm run dev
 
 ## Fluxo de contribuição (passo a passo)
 
-1. **Faça um fork** do repositório (botão "Fork" no GitHub).
+1. **Faça um fork** do repositório
+   [andrewsegas/da-tec](https://github.com/andrewsegas/da-tec) (botão "Fork" no GitHub).
 2. **Clone** o seu fork:
    ```bash
    git clone https://github.com/SEU-USUARIO/da-tec.git

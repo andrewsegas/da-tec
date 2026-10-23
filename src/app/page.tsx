@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getCurrentProfile } from "@/modules/profiles/queries";
 
-const REPO_URL = "https://github.com/unisanta-tec/da-tec";
+const REPO_URL = "https://github.com/andrewsegas/da-tec";
 
 const modules = [
   {

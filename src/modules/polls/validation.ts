@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { localDateTimeToIso } from "@/lib/datetime";
+
 export const pollBaseSchema = z.object({
   question: z
     .string()
@@ -22,10 +24,7 @@ export const createPollSchema = pollBaseSchema.extend({
 export type CreatePollInput = z.infer<typeof createPollSchema>;
 export type PollBaseInput = z.infer<typeof pollBaseSchema>;
 
-/** Converte o valor de um input datetime-local em ISO (ou null). */
+/** Converte o valor de um input datetime-local (horário de Brasília) em ISO (ou null). */
 export function parseClosesAt(value: string | undefined): string | null {
-  if (!value || value.length === 0) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString();
+  return localDateTimeToIso(value);
 }

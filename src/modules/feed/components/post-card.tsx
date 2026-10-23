@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageCircle, Trash2 } from "lucide-react";
 
+import { formatDateTime as formatInAppTimeZone } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -10,7 +11,7 @@ import type { FeedPost } from "@/modules/feed/types";
 import { LikeButton } from "./like-button";
 
 export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("pt-BR", {
+  return formatInAppTimeZone(iso, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
