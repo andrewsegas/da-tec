@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { toDateTimeLocalInput } from "@/lib/datetime";
 import { emptyFormState } from "@/lib/forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,13 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/field-error";
 import { SubmitButton } from "@/components/submit-button";
 import { updatePollAction } from "@/modules/polls/actions";
-
-function toDatetimeLocal(iso: string | null): string {
-  if (!iso) return "";
-  const date = new Date(iso);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 16);
-}
 
 type Props = {
   poll: {
@@ -83,7 +77,7 @@ export function PollEditForm({ poll }: Props) {
           id="closesAt"
           name="closesAt"
           type="datetime-local"
-          defaultValue={toDatetimeLocal(poll.closes_at)}
+          defaultValue={toDateTimeLocalInput(poll.closes_at)}
         />
       </div>
 
