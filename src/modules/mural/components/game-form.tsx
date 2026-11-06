@@ -2,18 +2,12 @@
 
 import { useActionState } from "react";
 
+import { toDateTimeLocalInput } from "@/lib/datetime";
 import { emptyFormState, type FormState } from "@/lib/forms";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/field-error";
 import { SubmitButton } from "@/components/submit-button";
-
-function toDatetimeLocal(iso?: string | null): string {
-  if (!iso) return "";
-  const date = new Date(iso);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 16);
-}
 
 const selectClass =
   "border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none";
@@ -117,7 +111,7 @@ export function GameForm({
             id="startsAt"
             name="startsAt"
             type="datetime-local"
-            defaultValue={toDatetimeLocal(defaults?.startsAt)}
+            defaultValue={toDateTimeLocalInput(defaults?.startsAt)}
             required
           />
           <FieldError messages={state.fieldErrors?.startsAt} />

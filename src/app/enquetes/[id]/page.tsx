@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { formatDateTime } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -81,7 +82,7 @@ export default async function EnquetePage({
         {poll.closes_at ? (
           <p className="text-muted-foreground mb-6 text-sm">
             {open ? "Encerra" : "Encerrou"} em{" "}
-            {new Date(poll.closes_at).toLocaleString("pt-BR")}
+            {formatDateTime(poll.closes_at)}
           </p>
         ) : null}
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { formatDate } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -95,7 +96,7 @@ export default async function ConvitesPage() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{invite.email}</p>
                     <p className="text-muted-foreground text-xs">
-                      {new Date(invite.created_at).toLocaleDateString("pt-BR")}
+                      {formatDate(invite.created_at)}
                       {invite.note ? ` · ${invite.note}` : ""}
                     </p>
                   </div>

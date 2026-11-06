@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { localDateTimeToIso, parseLocalDateTime } from "@/lib/datetime";
+
 const optionalText = (max: number) =>
   z
     .string()
@@ -37,22 +39,22 @@ export const tryoutSchema = z
       .optional(),
   })
   .superRefine((value, ctx) => {
-    const startsAt = new Date(value.startsAt);
-    const deadline = new Date(value.registrationDeadline);
-    if (Number.isNaN(startsAt.getTime())) {
+    const startsAt = parseLocalDateTime(value.startsAt);
+    const deadline = parseLocalDateTime(value.registrationDeadline);
+    if (!startsAt) {
       ctx.addIssue({
         code: "custom",
         path: ["startsAt"],
         message: "Data da peneira inválida.",
       });
     }
-    if (Number.isNaN(deadline.getTime())) {
+    if (!deadline) {
       ctx.addIssue({
         code: "custom",
         path: ["registrationDeadline"],
         message: "Prazo de inscrição inválido.",
       });
-    } else if (!Number.isNaN(startsAt.getTime()) && deadline >= startsAt) {
+    } else if (startsAt && deadline >= startsAt) {
       ctx.addIssue({
         code: "custom",
         path: ["registrationDeadline"],
@@ -81,7 +83,7 @@ export function slugifySportName(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
+/** Input datetime-local (horário de Brasília) → ISO para o banco. */
 export function toIsoDateTime(value: string): string | null {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return localDateTimeToIso(value);
 }

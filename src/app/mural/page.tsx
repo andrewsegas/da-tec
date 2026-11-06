@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarDays, Newspaper, Trash2, Trophy } from "lucide-react";
 
+import { formatDateTime } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
@@ -19,7 +20,7 @@ import { RsvpButton } from "@/modules/mural/components/rsvp-button";
 export const metadata: Metadata = { title: "Mural" };
 
 function fmt(iso: string): string {
-  return new Date(iso).toLocaleString("pt-BR", {
+  return formatDateTime(iso, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",

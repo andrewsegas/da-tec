@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { formatDate } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
@@ -50,9 +51,7 @@ export default async function EnquetesPage() {
                             {poll.question}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            {new Date(poll.created_at).toLocaleDateString(
-                              "pt-BR",
-                            )}
+                            {formatDate(poll.created_at)}
                           </p>
                         </div>
                         <span

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { localDateTimeToIso } from "@/lib/datetime";
+
 export const newsSchema = z.object({
   title: z
     .string()
@@ -41,10 +43,7 @@ export const eventSchema = z.object({
   location: z.string().trim().max(120, "Local muito longo.").optional(),
 });
 
-/** Converte um input datetime-local em ISO (ou null se vazio/inválido). */
+/** Converte um input datetime-local (horário de Brasília) em ISO (ou null se vazio/inválido). */
 export function parseDateTime(value: string | undefined | null): string | null {
-  if (!value || value.trim() === "") return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString();
+  return localDateTimeToIso(value);
 }

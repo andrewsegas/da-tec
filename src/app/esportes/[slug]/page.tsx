@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CalendarDays, MapPin, Users } from "lucide-react";
 
+import { formatDateTime } from "@/lib/datetime";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +109,7 @@ export default async function SportDetailPage({
                                     <MapPin className="size-3.5" /> {tryout.location}
                                   </p>
                                   <p className="text-muted-foreground mt-1 text-xs">
-                                    {new Date(tryout.starts_at).toLocaleString("pt-BR")}
+                                    {formatDateTime(tryout.starts_at)}
                                   </p>
                                 </div>
                                 {registration ? (
@@ -122,7 +123,7 @@ export default async function SportDetailPage({
                               ) : null}
                               <p className="text-muted-foreground mt-3 text-xs">
                                 Inscrições até{" "}
-                                {new Date(tryout.registration_deadline).toLocaleString("pt-BR")}
+                                {formatDateTime(tryout.registration_deadline)}
                                 {tryout.max_spots ? ` · ${tryout.max_spots} vaga(s)` : ""}
                               </p>
                               <div className="mt-4">

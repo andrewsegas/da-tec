@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { formatDateTime } from "@/lib/datetime";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -162,7 +163,7 @@ export default async function SportsManagementPage() {
                                             <div>
                                               <p className="text-sm font-medium">{tryout.title}</p>
                                               <p className="text-muted-foreground text-xs">
-                                                {new Date(tryout.starts_at).toLocaleString("pt-BR")} ·{" "}
+                                                {formatDateTime(tryout.starts_at)} ·{" "}
                                                 {tryout.location}
                                               </p>
                                             </div>
